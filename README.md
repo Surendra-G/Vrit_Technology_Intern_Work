@@ -34,3 +34,24 @@ A Django REST API for tracking expenses and income with JWT authentication.
 - `PUT /api/expenses/{id}/` - Update a record
 - `DELETE /api/expenses/{id}/` - Delete a record
 
+
+UI of the System
+Front Page
+![image](https://github.com/user-attachments/assets/d3e1522e-9b25-4f82-9d11-e30c32c8c00f)
+
+Register Page
+![image](https://github.com/user-attachments/assets/58d1a366-cbfb-4b26-9762-e6faa2f395c6)
+
+Login Page
+![image](https://github.com/user-attachments/assets/06574a3a-856e-46f5-9dd6-7c0843ccfea9)
+![image](https://github.com/user-attachments/assets/ec3efe13-abe8-4002-a032-e93371edb765)
+
+Expenses Page
+![image](https://github.com/user-attachments/assets/fde68249-6961-4544-8f3c-9badc47906bf)
+
+
+
+![image](https://github.com/user-attachments/assets/79e1aa7e-dc21-409b-838b-edf7671086af)
+![image](https://github.com/user-attachments/assets/bcc7d2ea-7d43-4758-9031-ef1caa6ef6df)
+
+
