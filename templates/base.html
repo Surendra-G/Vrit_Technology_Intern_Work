@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your expenses and income with this simple expense tracker application.">
+    <meta name="keywords" content="expense tracker, finance, budget, income, expenses">
+    <title>Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .transaction-card {
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+        .transaction-card.credit {
+            border-left-color: #28a745;
+        }
+        .transaction-card.debit {
+            border-left-color: #dc3545;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 20px;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+        .auth-form {
+            display: none;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        @media (max-width: 576px) {
+            body {
+                padding: 10px;
+            }
+            .form-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Expense Tracker</a>
+            <div class="navbar-nav">
+                <span class="nav-item nav-link" id="username-display" style="display: none;"></span>
+                <button class="btn btn-outline-light btn-sm" id="logout-btn" style="display: none;">Logout</button>
+                <button class="btn btn-outline-light btn-sm ms-2" id="login-btn">Login</button>
+                <button class="btn btn-outline-light btn-sm ms-2" id="register-btn">Register</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="auth-forms" class="row">
+            <div id="login-form" class="auth-form">
+                <div class="form-container">
+                    <h4>Login</h4>
+                    <form id="login-form-submit">
+                        <div class="mb-3">
+                            <label for="login-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="login-username" required aria-describedby="usernameHelp">
+                            <div id="usernameHelp" class="form-text">Enter your username.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="login-password" required aria-describedby="passwordHelp">
+                            <div id="passwordHelp" class="form-text">Enter your password.</div>
+                        </div>
+                        <input type="hidden" name="csrf_token" id="csrf_token_login">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+            <div id="register-form" class="auth-form">
+                <div class="form-container">
+                    <h4>Register</h4>
+                    <form id="register-form-submit">
+                        <div class="mb-3">
+                            <label for="register-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="register-username" required aria-describedby="registerUsernameHelp">
+                            <div id="registerUsernameHelp" class="form-text">Choose a unique username.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="register-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="register-password" required aria-describedby="registerPasswordHelp">
+                            <div id="registerPasswordHelp" class="form-text">Password must be at least 8 characters.</div>
+                        </div>
+                        <input type="hidden" name="csrf_token" id="csrf_token_register">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="app-content" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-container">
+                        <h4>Add New Transaction</h4>
+                        <form id="transaction-form">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" required aria-describedby="titleHelp">
+                                <div id="titleHelp" class="form-text">Enter transaction title.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description (Optional)</label>
+                                <textarea class="form-control" id="description" rows="2" aria-describedby="descriptionHelp"></textarea>
+                                <div id="descriptionHelp" class="form-text">Optional transaction details.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="amount" required aria-describedby="amountHelp">
+                                <div id="amountHelp" class="form-text">Enter the transaction amount.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Transaction Type</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="transaction_type" id="debit" value="debit" checked aria-describedby="debitHelp">
+                                        <label class="form-check-label" for="debit">Debit (Expense)</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="transaction_type" id="credit" value="credit" aria-describedby="creditHelp">
+                                        <label class="form-check-label" for="credit">Credit (Income)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tax" class="form-label">Tax</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="tax" value="0" aria-describedby="taxHelp">
+                                <div id="taxHelp" class="form-text">Enter tax amount or percentage.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tax Type</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="tax_type" id="flat" value="flat" checked aria-describedby="flatHelp">
+                                        <label class="form-check-label" for="flat">Flat</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="tax_type" id="percentage" value="percentage" aria-describedby="percentageHelp">
+                                        <label class="form-check-label" for="percentage">Percentage</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="csrf_token" id="csrf_token_transaction">
+                            <button type="submit" class="btn btn-primary">Add Transaction</button>
+                            <button type="reset" class="btn btn-secondary ms-2">Clear</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-container">
+                        <h4>Transaction Summary</h4>
+                        <div id="summary">
+                            <p>Total Income: <span id="total-income">$0.00</span></p>
+                            <p>Total Expenses: <span id="total-expense">$0.00</span></p>
+                            <p>Net Balance: <span id="net-balance">$0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <h4>Your Transactions</h4>
+                    <div id="loading">Loading...</div>
+                    <div id="transactions-list"></div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
